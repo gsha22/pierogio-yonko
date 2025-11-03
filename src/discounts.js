@@ -64,12 +64,14 @@ function applyCoupon(code, order) {
   }
   
   if (code === 'FIRST10') {
-    let discount = -0.10;
+    // FIRST10: give 10% off the order subtotal (never negative)
+    const pct = 0.10;
     let subtotal = 0;
     for (const item of order.items) {
       subtotal += item.unitPriceCents * item.qty;
     }
-    return Math.floor(subtotal * discount);
+    const discountAmount = Math.floor(subtotal * pct);
+    return Math.max(0, discountAmount);
   }
   
   return 0;

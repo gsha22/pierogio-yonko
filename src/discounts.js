@@ -1,11 +1,4 @@
-/**
- * Calculate discounts for an order
- * 
- * @param {Object} order - The order object
- * @param {Object} profile - Customer profile with tier property
- * @param {string|null} couponCode - Optional coupon code
- * @returns {number} - Total discount amount in cents (positive number)
- */
+// ...existing code...
 function discounts(order, profile, couponCode = null) {
   let totalDiscount = 0;
   
@@ -35,15 +28,14 @@ function discounts(order, profile, couponCode = null) {
     totalDiscount += couponDiscount;
   }
   
+  // Ensure discount is an integer, non-negative and does not exceed order subtotal
+  const orderSubtotal = order.items.reduce((s, it) => s + it.unitPriceCents * it.qty, 0);
+  totalDiscount = Math.floor(totalDiscount);
+  totalDiscount = Math.max(0, Math.min(totalDiscount, orderSubtotal));
+  
   return totalDiscount;
 }
-
-/**
- * Apply coupon discount
- * @param {string} code - Coupon code
- * @param {Object} order - The order object
- * @returns {number} - Discount amount in cents
- */
+// ...existing code...
 function applyCoupon(code, order) {
   if (code === 'PIEROGI-BOGO') {
     let discount = 0;
@@ -76,5 +68,5 @@ function applyCoupon(code, order) {
   
   return 0;
 }
-
+// ...existing code...
 module.exports = { discounts };

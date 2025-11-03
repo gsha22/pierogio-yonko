@@ -38,6 +38,15 @@ const orderArb = fc.record({
   items: fc.array(orderItemArb, { minLength: 1, maxLength: 5 })
 });
 
+// Context arbitrary for discounts/tax/delivery/total
+const contextArb = fc.record({
+  tier: tierArb,
+  zone: zoneArb,
+  // whether the customer requested delivery; when false, delivery fee should be 0
+  isDelivery: fc.boolean(),
+  // extra flags that implementation might or might not use
+  hasCoupon: fc.boolean()
+});
 
 // ------------------------------------------------------------------------------
 // To test discounts, tax, delivery and total, you will need to add more
@@ -72,15 +81,27 @@ describe('Property-Based Tests for Orders', () => {
     // Feel free to copy, paste, and modify as needed multiple times.
     // ---------------------------------------------------------------------------
     //
-    // it('subtotal should always be non-negative integer', () => {
-    //   fc.assert(
-    //     fc.property(, (order) => { // add the appropriate arbitraries here
-    //       const result = subtotal(order); // change this to the function you are testing
-    //       return result >= 0 && Number.isInteger(result); // add the property you want to verify
-    //     }),
-    //     { numRuns: 50 } // you can adjust the number of runs as needed
-    //   );
-    // });
 
+    // ...existing code...
+    it('discounted price should always be less than the actual price', () => {
+      fc.assert(
+        fc.property(
+          orderArb,
+          contextArb,
+          fc.constantFrom(null, 'PIEROGI-BOGO', 'FIRST10'),
+          (order, ctx, couponCode) => {
+            const profile = { tier: ctx.tier };
+            const sub = subtotal(order);
+            const discountAmount = discounts(order, profile, couponCode);
+            const discountedPrice = sub - discountAmount;
+            // discounted price should not exceed subtotal and must be non-negative
+            return discountedPrice <= sub && discountedPrice >= 0 && Number.isInteger(discountAmount);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    
   });
 });
